@@ -1,0 +1,6 @@
+subscription_id        = "00000000-0000-0000-0000-000000000000"
+location                = "uksouth"
+resource_group_suffix   = "dev01"
+ssh_public_key_path     = "~/.ssh/claims_modernization.pub"
+sql_admin_password      = "Replace-With-A-Strong-Password1!"
+git_tag                 = "phase-0-single-vm-baseline"

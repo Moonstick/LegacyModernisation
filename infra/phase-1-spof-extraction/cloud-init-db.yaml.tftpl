@@ -1,0 +1,22 @@
+#cloud-config
+package_update: true
+packages:
+  - wget
+  - apt-transport-https
+  - software-properties-common
+  - gnupg2
+
+runcmd:
+  # SQL Server 2022, on its own VM in this phase (still a single instance --
+  # extracting it from the web tier removes the "one box does everything"
+  # bottleneck but does not add DB redundancy; that's Phase 5).
+  - curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list | tee /etc/apt/sources.list.d/mssql-server-2022.list
+  - apt-get update -y
+  - apt-get install -y mssql-server
+  - MSSQL_PID=Developer MSSQL_SA_PASSWORD='${sql_admin_password}' ACCEPT_EULA=Y /opt/mssql/bin/mssql-conf -n setup
+  - systemctl enable mssql-server
+  - systemctl start mssql-server
+
+  # Allow remote TCP connections from the web subnet (the db subnet's NSG,
+  # defined in this phase's main.tf, restricts this to 10.0.1.0/24 already --
+  # mssql-conf above already binds to all interfaces by default).

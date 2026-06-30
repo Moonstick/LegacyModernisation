@@ -1,0 +1,81 @@
+#cloud-config
+package_update: true
+packages:
+  - wget
+  - apt-transport-https
+  - software-properties-common
+  - gnupg2
+  - git
+  - nginx
+
+write_files:
+  - path: /etc/systemd/system/claims-app.service
+    content: |
+      [Unit]
+      Description=ClaimsCaseManagement web app
+      After=network.target mssql-server.service
+      Requires=mssql-server.service
+
+      [Service]
+      WorkingDirectory=/opt/claims/publish
+      ExecStart=/usr/bin/dotnet /opt/claims/publish/ClaimsCaseManagement.dll
+      Restart=always
+      RestartSec=10
+      User=claimsapp
+      Environment=ASPNETCORE_URLS=http://localhost:5000
+      Environment=ASPNETCORE_ENVIRONMENT=Production
+      Environment=ConnectionStrings__ClaimsDb=Server=localhost;Database=ClaimsCaseManagement;User Id=sa;Password=${sql_admin_password};TrustServerCertificate=True;MultipleActiveResultSets=true
+
+      [Install]
+      WantedBy=multi-user.target
+    permissions: '0644'
+
+  - path: /etc/nginx/sites-available/claims-app
+    content: |
+      server {
+          listen 80 default_server;
+          server_name _;
+
+          location / {
+              proxy_pass http://localhost:5000;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+          }
+      }
+    permissions: '0644'
+
+runcmd:
+  # App user (no shell login needed -- dotnet doesn't require one)
+  - useradd -m -s /usr/sbin/nologin claimsapp || true
+
+  # .NET 8 SDK (publish needs the SDK, not just the runtime)
+  - wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O /tmp/packages-microsoft-prod.deb
+  - dpkg -i /tmp/packages-microsoft-prod.deb
+  - apt-get update -y
+  - apt-get install -y dotnet-sdk-8.0
+
+  # SQL Server 2022, co-located on this VM for Phase 0
+  - curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list | tee /etc/apt/sources.list.d/mssql-server-2022.list
+  - apt-get update -y
+  - apt-get install -y mssql-server
+  - MSSQL_PID=Developer MSSQL_SA_PASSWORD='${sql_admin_password}' ACCEPT_EULA=Y /opt/mssql/bin/mssql-conf -n setup
+  - systemctl enable mssql-server
+  - systemctl start mssql-server
+
+  # App: clone the exact phase tag, publish a self-contained release build
+  - git clone --branch ${git_tag} --depth 1 https://github.com/Moonstick/LegacyModernisation.git /opt/claims/src
+  - cd /opt/claims/src/src/ClaimsCaseManagement && dotnet publish -c Release -o /opt/claims/publish
+  - chown -R claimsapp:claimsapp /opt/claims
+
+  # nginx reverse proxy on :80 -> app on :5000
+  - rm -f /etc/nginx/sites-enabled/default
+  - ln -sf /etc/nginx/sites-available/claims-app /etc/nginx/sites-enabled/claims-app
+  - systemctl restart nginx
+  - systemctl enable nginx
+
+  # Start the app (DbInitializer.Seed() creates the schema and seed data on first run)
+  - systemctl daemon-reload
+  - systemctl enable claims-app
+  - systemctl start claims-app

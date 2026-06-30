@@ -1,0 +1,8 @@
+subscription_id        = "00000000-0000-0000-0000-000000000000"
+tenant_id               = "00000000-0000-0000-0000-000000000000"
+location                = "uksouth"
+secondary_location      = "ukwest"
+resource_group_suffix   = "dev01"
+sql_admin_login         = "claimsadmin"
+sql_admin_password      = "Replace-With-A-Strong-Password1!"
+app_service_sku         = "B1"

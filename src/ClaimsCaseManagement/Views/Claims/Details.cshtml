@@ -60,10 +60,40 @@
             </li>
         }
         </ul>
+
+        @{
+            var recentlyViewed = (List<string>)(ViewBag.RecentlyViewed ?? new List<string>());
+        }
+        @if (recentlyViewed.Count > 1)
+        {
+            <h5 class="mt-4">Recently Viewed</h5>
+            <ul class="list-group">
+            @foreach (var claimNumber in recentlyViewed)
+            {
+                <li class="list-group-item @(claimNumber == Model.ClaimNumber ? "active" : "")">@claimNumber</li>
+            }
+            </ul>
+        }
     </div>
 </div>
 
 <hr />
+<h5>Attachments</h5>
+<form method="post" asp-action="Upload" enctype="multipart/form-data" class="row g-2 mb-3">
+    <input type="hidden" name="claimId" value="@Model.ClaimId" />
+    <div class="col-md-8"><input type="file" name="file" class="form-control" required /></div>
+    <div class="col-md-2"><button type="submit" class="btn btn-secondary w-100">Upload</button></div>
+</form>
+<ul class="list-group mb-4">
+@foreach (var attachment in Model.Attachments.OrderByDescending(a => a.UploadedAt))
+{
+    <li class="list-group-item">
+        <a asp-action="Download" asp-route-attachmentId="@attachment.ClaimAttachmentId">@attachment.FileName</a>
+        <span class="text-muted">(@attachment.UploadedAt.ToString("g"))</span>
+    </li>
+}
+</ul>
+
 <h5>Notes</h5>
 <form method="post" asp-action="AddNote" class="row g-2 mb-3">
     <input type="hidden" name="claimId" value="@Model.ClaimId" />
