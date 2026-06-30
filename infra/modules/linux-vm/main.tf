@@ -32,7 +32,8 @@ resource "azurerm_linux_virtual_machine" "this" {
   network_interface_ids = [
     azurerm_network_interface.this.id,
   ]
-  tags = var.tags
+  availability_set_id = var.availability_set_id
+  tags                = var.tags
 
   disable_password_authentication = true
 

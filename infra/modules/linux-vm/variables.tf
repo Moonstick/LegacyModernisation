@@ -53,6 +53,12 @@ variable "os_disk_size_gb" {
   description = "Size in GB of the OS disk."
 }
 
+variable "availability_set_id" {
+  type        = string
+  default     = null
+  description = "ID of an availability set to place the VM in, or null to omit (e.g. for single-VM phases)."
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
