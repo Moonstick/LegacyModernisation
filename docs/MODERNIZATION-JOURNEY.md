@@ -61,11 +61,13 @@ App Service deployed in two regions behind Azure Front Door, the Managed Instanc
 | Phase | Tag | What it proves |
 |---|---|---|
 | 0 | `phase-0-single-vm-baseline` | The starting point, and its single point of failure |
-| 1 | `phase-1-spof-extraction` | Infra redundancy alone doesn't fix app-level state assumptions |
-| 2 | `phase-2-paas-foundations` | PaaS compute/data without fixing storage/session is not enough |
-| 3 | `phase-3-blob-storage` | File consistency fixed |
-| 4 | `phase-4-redis-session` | Session consistency fixed |
-| 5 | `phase-5-managed-instance` | Database HA/DR |
-| 6 | `phase-6-multi-region` | Global scale + regional failover |
+| 1 | `phase-1-spof-extraction-baseline` | Infra redundancy alone doesn't fix app-level state assumptions |
+| 2 | `phase-2-paas-foundations-baseline` | PaaS compute/data without fixing storage/session is not enough |
+| 3 | `phase-3-blob-storage-baseline` | File consistency fixed |
+| 4 | `phase-4-redis-session-baseline` | Session consistency fixed |
+| 5 | `phase-5-managed-instance-baseline` | Database HA/DR |
+| 6 | `phase-6-multi-region-baseline` | Global scale + regional failover |
+
+Tags for phases 0 and 1 match the `git_tag` Terraform variable default in those phases (cloud-init checks the repo out at that tag); phases 2-6 deploy from your local working tree via `az webapp deploy`, so their tags are checkpoint markers only, not consumed by any Terraform config.
 
 `git checkout <tag>` at any point gives you the exact app + infra + load test state for that phase.
