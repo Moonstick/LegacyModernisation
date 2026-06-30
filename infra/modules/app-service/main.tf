@@ -17,8 +17,8 @@ resource "azurerm_linux_web_app" "this" {
   app_settings = var.app_settings
 
   site_config {
-    always_on          = var.always_on
-    health_check_path  = var.health_check_path
+    always_on         = var.always_on
+    health_check_path = var.health_check_path
 
     application_stack {
       dotnet_version = var.dotnet_version

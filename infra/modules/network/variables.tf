@@ -22,7 +22,7 @@ variable "address_space" {
 variable "subnets" {
   type = map(object({
     address_prefixes = list(string)
-    delegation        = optional(string)
+    delegation       = optional(string)
   }))
   description = "Map of subnets to create, keyed by logical name. 'delegation', when set, is an Azure service delegation name (e.g. Microsoft.Web/serverFarms or Microsoft.Sql/managedInstances)."
 }

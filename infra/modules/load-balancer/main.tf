@@ -47,7 +47,7 @@ resource "azurerm_lb_rule" "this" {
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
   for_each = { for nic in var.backend_nics : nic.nic_id => nic }
 
-  network_interface_id   = each.value.nic_id
-  ip_configuration_name  = each.value.ip_configuration_name
+  network_interface_id    = each.value.nic_id
+  ip_configuration_name   = each.value.ip_configuration_name
   backend_address_pool_id = azurerm_lb_backend_address_pool.this.id
 }

@@ -19,10 +19,10 @@ resource "azurerm_mssql_managed_instance" "this" {
 resource "azurerm_mssql_managed_instance_failover_group" "this" {
   count = var.enable_failover_group ? 1 : 0
 
-  name                         = "${var.name}-fog"
-  location                     = var.location
-  managed_instance_id          = azurerm_mssql_managed_instance.this.id
-  partner_managed_instance_id  = var.partner_managed_instance_id
+  name                        = "${var.name}-fog"
+  location                    = var.location
+  managed_instance_id         = azurerm_mssql_managed_instance.this.id
+  partner_managed_instance_id = var.partner_managed_instance_id
 
   read_write_endpoint_failover_policy {
     mode = "Automatic"

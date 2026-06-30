@@ -14,6 +14,10 @@ How to deploy, load-test, and tear down any phase of the [modernization journey]
 
 Every phase except 0/1 provisions real billable PaaS resources (App Service, Azure SQL, Redis, Storage). **Phase 5 (SQL Managed Instance) is the most expensive and slowest to provision** — expect 4-6 hours for the instance to come online, and a non-trivial hourly cost while it exists. Always run `teardown.sh` when you're done with a phase. Each phase deploys into its own resource group (`rg-claims-phase{N}-<suffix>`) specifically so you can tear one down without touching another.
 
+## A note on how this repo was authored
+
+The Terraform, app code, and load tests in this repo were written in a sandboxed environment without outbound access to `registry.terraform.io` or the .NET SDK download host, so `terraform validate` and `dotnet build` could not be run as part of authoring. Every module was formatted with `terraform fmt` and manually reviewed for internal consistency (variable/output names, resource references) instead. Run `terraform init && terraform validate` and `dotnet build` yourself as a first step in your own environment before deploying — that's the real verification this repo couldn't do for you. Relatedly, the app still calls `Database.EnsureCreated()` (see `DbInitializer.cs`) rather than EF Core migrations, for the same reason — `EnsureCreated()` works fine for every phase's fresh database, but if you extend the schema later you'll want to switch to migrations yourself.
+
 ## Deploying a phase
 
 ```bash
